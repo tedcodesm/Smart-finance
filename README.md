@@ -4,11 +4,33 @@
 
 ## Features
 
-- **Transactions**: Log income and expenses by category.
-- **Budgets**: Set spending limits and receive alerts when you approach them.
-- **Goals**: Set long-term savings goals and track your progress based on net cash flow.
-- **Predictions**: Nightly ML batch jobs analyze your spending habits to forecast your future financial health.
-- **Reports**: Beautiful, responsive charts to help you visualize your data.
+### 1. Transactions
+This is the foundational data of the app. Every time you earn money (income) or spend money (expense), it is logged here.
+
+- **What it does:** It tracks the date, amount, description, and category (e.g., Groceries, Rent, Salary).
+- **Why it matters:** Everything else in the application (Budgets, Goals, Predictions) relies on reading your transaction history to figure out your financial health.
+
+### 2. Budgets
+Budgets act as limits you set on your spending for specific categories over a specific time period (usually a month).
+
+- **What it does:** You might say, "I only want to spend $400 on Groceries this month." The app actively compares your actual Transactions tagged as "Groceries" against this $400 limit.
+- **Alerts:** If you hit 80% of your limit (based on the `BUDGET_ALERT_THRESHOLD_PCT=0.8` setting in your `.env`), the app will generate an alert to warn you that you are close to overspending.
+
+### 3. Goals (Savings Goals)
+Goals are long-term targets you want to hit, like saving for a "Vacation" or an "Emergency Fund."
+
+- **What it does:** You set a target amount and a target date. As you have leftover income (Net Cash Flow) at the end of each month, the app tracks your progress toward hitting those targets. It helps you visualize how far along you are and if you are on track to meet your deadline.
+
+### 4. Predictions (Machine Learning)
+This is where the app gets smart.
+
+- **What it does:** Instead of just looking at the past, the backend has a machine learning (ML) scheduler that wakes up at 2:17 AM to analyze your transaction history.
+- **Why it matters:** It learns your spending habits and recurring bills to predict how much money you will likely spend next month, or whether you will have enough cash flow to hit your Savings Goals in time. It automatically forecasts your future financial position.
+
+### 5. Reports
+Reports take all of the raw data from your Transactions and turn it into actionable insights.
+
+- **What it does:** It groups your data into beautiful charts and summaries. Instead of looking at 50 individual coffee purchases, a report aggregates it so you can see "I spent 15% of my total income on Dining Out this quarter, which is 5% more than last quarter."
 
 ---
 
