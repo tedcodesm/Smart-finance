@@ -36,9 +36,9 @@ export default function Login() {
     <div className="auth-wrap">
       <div className="card auth-card">
         <div className="brand">
-          <div className="brand-mark">M</div>
+          <div className="brand-mark">U</div>
           <div>
-            <div className="brand-name">Mercy</div>
+            <div className="brand-name">user</div>
             <div className="brand-sub">personal finance</div>
           </div>
         </div>
