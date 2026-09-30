@@ -107,7 +107,7 @@ export default function Predictions() {
           <p className="sub">
             {models?.available
               ? `4 pooled models · artifacts in ${models.artifact_dir}`
-              : "Models unavailable — run mercy-ml-train"}
+              : "Models unavailable — run ml-train"}
           </p>
         </div>
         <button className="btn" onClick={runInference}>

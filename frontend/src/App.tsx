@@ -15,7 +15,7 @@ export default function App() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading">Loading Mercy…</div>;
+    return <div className="loading">Loading …</div>;
   }
 
   if (!user) {
