@@ -8,7 +8,11 @@
  *    replayed once. Concurrent 401s share that single refresh.
  */
 
-const BASE = "/api/v1";
+// In production there is no Vite dev-server proxy, so we need to prefix every
+// request with the backend origin. VITE_BACKEND_ORIGIN is set in the Render
+// environment; it is empty (undefined) in local dev where the proxy handles it.
+const ORIGIN = (import.meta.env.VITE_BACKEND_ORIGIN ?? "").replace(/\/$/, "");
+const BASE = `${ORIGIN}/api/v1`;
 const ACCESS_KEY = "mercy.access_token";
 const REFRESH_KEY = "mercy.refresh_token";
 
