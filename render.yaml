@@ -4,6 +4,7 @@ services:
   # ---------------------------------------------------------
   - type: web
     name: backend
+    plan: free
     env: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
