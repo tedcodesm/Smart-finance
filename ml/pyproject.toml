@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mercy-ml"
+version = "0.1.0"
+description = "Machine learning service for Mercy - personal finance forecasting and overspend prediction"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.4",
+    "statsmodels>=0.14",
+    "scipy>=1.11",
+    "joblib>=1.3",
+    "pymongo>=4.6",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.2",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+mercy-ml-train = "mercy_ml.train:main"
+mercy-ml-infer = "mercy_ml.infer:main"
+mercy-ml-generate = "mercy_ml.synthetic:main"
+mercy-ml-selftest = "mercy_ml.selftest:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mercy_ml = ["py.typed"]

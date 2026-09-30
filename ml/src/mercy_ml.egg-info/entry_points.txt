@@ -1,0 +1,5 @@
+[console_scripts]
+mercy-ml-generate = mercy_ml.synthetic:main
+mercy-ml-infer = mercy_ml.infer:main
+mercy-ml-selftest = mercy_ml.selftest:main
+mercy-ml-train = mercy_ml.train:main
