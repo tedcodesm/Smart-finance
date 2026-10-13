@@ -10,6 +10,7 @@ import type {
 } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Bar, Card, Empty, errorText, money, pct, relativeTime } from "../components/ui";
+import Loader from "../components/Loader";
 
 type Tab = "forecast" | "overspend" | "budgets" | "savings";
 
@@ -149,7 +150,7 @@ export default function Predictions() {
         ))}
       </div>
 
-      {active.loading && <div className="loading">Running model…</div>}
+      {active.loading && <Loader label="Running model…" />}
       {active.error && !awaitingData && <Banner kind="error">{errorText(active.error)}</Banner>}
 
       {awaitingData && (

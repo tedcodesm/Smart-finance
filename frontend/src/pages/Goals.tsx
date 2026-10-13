@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import type { Goal, Page } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Bar, Card, Empty, errorText, money, pct, shortDate } from "../components/ui";
+import Loader from "../components/Loader";
 
 const BLANK = { name: "", target_amount: "", current_amount: "0", target_date: "", color: "#6366f1", description: "" };
 
@@ -126,7 +127,7 @@ export default function Goals() {
       </Card>
 
       {loading ? (
-        <div className="loading">Loading…</div>
+        <Loader label="Loading goals…" />
       ) : !data?.items.length ? (
         <Empty>No goals yet — create one above.</Empty>
       ) : (

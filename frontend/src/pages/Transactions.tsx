@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import type { Category, Page, Transaction } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Card, Empty, errorText, money, shortDate } from "../components/ui";
+import Loader from "../components/Loader";
 
 const BLANK = { amount: "", type: "expense", category_id: "", date: "", description: "", notes: "" };
 
@@ -202,7 +203,7 @@ export default function Transactions() {
 
       <div style={{ marginTop: "1rem" }}>
         {loading ? (
-          <div className="loading">Loading…</div>
+          <Loader label="Loading transactions…" />
         ) : !data?.items.length ? (
           <Empty>No transactions match these filters.</Empty>
         ) : (

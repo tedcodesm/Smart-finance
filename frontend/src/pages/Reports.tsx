@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import type { Page, Report } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Card, Empty, errorText, money, relativeTime } from "../components/ui";
+import Loader from "../components/Loader";
 
 const REPORT_TYPES = [
   { value: "spending_by_category", label: "Spending by category" },
@@ -238,7 +239,7 @@ export default function Reports() {
 
       <Card title="Saved reports">
         {loading ? (
-          <div className="loading">Loading…</div>
+          <Loader label="Loading reports…" />
         ) : !data?.items.length ? (
           <Empty>No saved reports yet.</Empty>
         ) : (

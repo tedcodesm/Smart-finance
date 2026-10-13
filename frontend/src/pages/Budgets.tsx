@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import type { Budget, Category, Page } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Bar, Card, Empty, errorText, money, pct, shortDate } from "../components/ui";
+import Loader from "../components/Loader";
 
 const BLANK = { name: "", limit_amount: "", period: "monthly", category_id: "" };
 
@@ -110,7 +111,7 @@ export default function Budgets() {
       </Card>
 
       {loading ? (
-        <div className="loading">Loading…</div>
+        <Loader label="Loading budgets…" />
       ) : !data?.items.length ? (
         <Empty>No budgets yet — create one above.</Empty>
       ) : (

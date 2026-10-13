@@ -1071,6 +1071,95 @@ tbody td.num { font-weight: 550; color: var(--text); }
   thead th, tbody td { padding: 9px 10px; }
 }
 
+/* ==========================================================================
+   Circuit-trace Loader  (Uiverse.io by Vosoone)
+   ========================================================================== */
+
+.loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 180px;
+  gap: 16px;
+}
+
+.loader-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin: 0;
+  animation: loader-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loader-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+/* Full-page centered variant (used by App.tsx auth check) */
+.loader-wrapper.full-page {
+  min-height: 100vh;
+}
+
+.main-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.loader {
+  width: 260px;
+  max-width: 90vw;
+}
+
+.trace-bg {
+  stroke: #333;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+.trace-flow {
+  stroke-width: 1.8;
+  fill: none;
+  stroke-dasharray: 40 400;
+  stroke-dashoffset: 438;
+  filter: drop-shadow(0 0 6px currentColor);
+  animation: flow 3s cubic-bezier(0.5, 0, 0.9, 1) infinite;
+}
+
+.yellow { stroke: #ffea00; color: #ffea00; }
+.blue   { stroke: #00ccff; color: #00ccff; }
+.green  { stroke: #00ff15; color: #00ff15; }
+.purple { stroke: #9900ff; color: #9900ff; }
+.red    { stroke: #ff3300; color: #ff3300; }
+
+@keyframes flow {
+  to { stroke-dashoffset: 0; }
+}
+
+.chip-text {
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.chip-pin {
+  stroke: #444;
+  stroke-width: 0.5;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+}
+
+/* ── Loader on dark backgrounds: boost chip label visibility ── */
+[data-theme="dark"] .chip-text {
+  fill: #a78bfa;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

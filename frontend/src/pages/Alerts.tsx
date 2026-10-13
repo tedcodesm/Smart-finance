@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import type { Alert, Page } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Card, Empty, errorText, relativeTime } from "../components/ui";
+import Loader from "../components/Loader";
 
 const TYPE_LABELS: Record<string, string> = {
   budget_threshold: "Budget threshold",
@@ -84,7 +85,7 @@ export default function Alerts() {
       {loadError && <Banner kind="error">{errorText(loadError)}</Banner>}
 
       {loading ? (
-        <div className="loading">Loading…</div>
+        <Loader label="Loading alerts…" />
       ) : !data?.items.length ? (
         <Empty>{unreadOnly ? "No unread alerts." : "No alerts."}</Empty>
       ) : (

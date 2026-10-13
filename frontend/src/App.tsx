@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import Layout from "./components/Layout";
+import Loader from "./components/Loader";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -15,8 +16,9 @@ export default function App() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading">Loading …</div>;
+    return <Loader label="Starting up…" />;
   }
+
 
   if (!user) {
     return (

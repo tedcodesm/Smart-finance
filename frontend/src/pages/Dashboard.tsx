@@ -3,6 +3,7 @@ import type { Dashboard, MetricCard } from "../api/types";
 import { useAsync } from "../hooks/useAsync";
 import { Banner, Card, Empty, errorText, money, pct, shortDate } from "../components/ui";
 import { useAuth } from "../auth/AuthContext";
+import Loader from "../components/Loader";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -118,7 +119,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { data, error, loading, reload } = useAsync(() => api.get<Dashboard>("/dashboard"), []);
 
-  if (loading) return <div className="loading">Loading dashboard…</div>;
+  if (loading) return <Loader label="Loading dashboard…" />;
   if (error) return <Banner kind="error">{errorText(error)}</Banner>;
   if (!data) return <Empty>No data.</Empty>;
 
