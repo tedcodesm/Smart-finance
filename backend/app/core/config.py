@@ -95,7 +95,12 @@ class Settings(BaseSettings):
     def artifact_dir(self) -> Path:
         """Absolute path to the ML artifact directory."""
         raw = Path(self.ml_artifact_dir)
-        return raw if raw.is_absolute() else (BACKEND_DIR / raw).resolve()
+        resolved = raw if raw.is_absolute() else (BACKEND_DIR / raw).resolve()
+        if not any(resolved.glob("*.joblib")):
+            backend_artifacts = BACKEND_DIR / "artifacts"
+            if any(backend_artifacts.glob("*.joblib")):
+                return backend_artifacts
+        return resolved
 
     @property
     def is_production(self) -> bool:

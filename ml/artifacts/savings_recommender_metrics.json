@@ -1,0 +1,107 @@
+{
+  "model_name": "savings_recommender",
+  "model_version": "savings_recommender_v1",
+  "trained_at": "2026-09-26T08:32:35.984574+00:00",
+  "n_samples": 499,
+  "n_train": 399,
+  "n_test": 100,
+  "n_features": 16,
+  "feature_names": [
+    "period_income",
+    "period_expense",
+    "period_net_savings",
+    "avg_income_3",
+    "avg_expense_3",
+    "income_trend_pct",
+    "expense_trend_pct",
+    "income_volatility",
+    "expense_volatility",
+    "savings_rate",
+    "txn_count",
+    "distinct_categories",
+    "recurring_share",
+    "user_tenure_periods",
+    "month_sin",
+    "month_cos"
+  ],
+  "metrics": {
+    "mae": 874.3017,
+    "mse": 1457896.1757,
+    "rmse": 1207.4337,
+    "r2": 0.2668,
+    "median_abs_error": 619.5547,
+    "mape": 121.66,
+    "mean_true_savings": 2549.3494,
+    "mean_predicted_savings": 2398.979,
+    "bias": -150.3704,
+    "overestimate_rate": 0.48,
+    "naive_last_period_mae": 1136.515,
+    "mae_skill_vs_naive": 0.2307,
+    "top_features": [
+      {
+        "feature": "avg_expense_3",
+        "importance": 0.34056
+      },
+      {
+        "feature": "avg_income_3",
+        "importance": 0.13366
+      },
+      {
+        "feature": "expense_trend_pct",
+        "importance": 0.09139
+      },
+      {
+        "feature": "period_net_savings",
+        "importance": 0.07613
+      },
+      {
+        "feature": "income_trend_pct",
+        "importance": 0.06425
+      },
+      {
+        "feature": "period_expense",
+        "importance": 0.05051
+      },
+      {
+        "feature": "income_volatility",
+        "importance": 0.04425
+      },
+      {
+        "feature": "period_income",
+        "importance": 0.04204
+      },
+      {
+        "feature": "savings_rate",
+        "importance": 0.03927
+      },
+      {
+        "feature": "txn_count",
+        "importance": 0.03202
+      },
+      {
+        "feature": "recurring_share",
+        "importance": 0.03015
+      },
+      {
+        "feature": "expense_volatility",
+        "importance": 0.02967
+      }
+    ]
+  },
+  "params": {
+    "estimator": "gradient_boosting",
+    "n_jobs": -1
+  },
+  "target_stats": {
+    "mean": 2558.5918637274544,
+    "std": 1560.7485273889963,
+    "min": 23.769999999999527,
+    "max": 11684.05,
+    "positive_rate": 1.0
+  },
+  "notes": [
+    "Target is next-period net savings (income - expense), not a wish amount.",
+    "Chronological split; allocation to a goal is business logic, not learned."
+  ],
+  "n_users": 59
+}

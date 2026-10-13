@@ -1,0 +1,56 @@
+{
+  "model_name": "spending_clusters",
+  "model_version": "spending_clusters_v1",
+  "trained_at": "2026-09-26T08:32:23.153209+00:00",
+  "n_samples": 16597,
+  "n_train": 16597,
+  "n_test": 0,
+  "n_features": 18,
+  "feature_names": [
+    "log_amount",
+    "amount_zscore_in_category",
+    "amount_ratio_in_category",
+    "day_of_week",
+    "is_weekend",
+    "day_of_month",
+    "is_month_start",
+    "is_month_end",
+    "week_of_year_sin",
+    "week_of_year_cos",
+    "month_sin",
+    "month_cos",
+    "txn_hour_bucket",
+    "user_period_expense",
+    "category_period_expense",
+    "category_share_of_period",
+    "is_recurring",
+    "category_name"
+  ],
+  "metrics": {
+    "silhouette_score": 0.2606,
+    "n_clusters": 2,
+    "inertia": 443433.7829,
+    "calinski_harabasz": 2038.7099,
+    "davies_bouldin": 1.7544,
+    "silhouette_by_k": {
+      "2": 0.2606,
+      "3": 0.0936,
+      "4": 0.1367,
+      "5": 0.1375,
+      "6": 0.1415
+    },
+    "cluster_sizes": {
+      "0": 1754,
+      "1": 14843
+    }
+  },
+  "params": {
+    "n_jobs": -1
+  },
+  "target_stats": {},
+  "notes": [
+    "Unsupervised: no train/test split - evaluated with silhouette + Calinski-Harabasz + Davies-Bouldin on the full feature matrix.",
+    "K chosen by silhouette over 2..6; features standardised before fitting."
+  ],
+  "n_users": 60
+}

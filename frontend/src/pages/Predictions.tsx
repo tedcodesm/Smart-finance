@@ -22,12 +22,11 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 /**
- * A new account has nothing scored yet, so the on-demand endpoints answer 404
- * (`not_found`) instead of 200 with an empty body. That is an empty state, not a
- * fault, so it gets onboarding copy rather than a red error banner.
+ * A new account has nothing scored yet (404), or models might be awaiting training (503).
+ * These get friendly guided state rather than a generic red failure.
  */
 function notScoredYet(err: Error | null): boolean {
-  return err instanceof ApiError && err.status === 404;
+  return err instanceof ApiError && (err.status === 404 || err.status === 503);
 }
 
 /** Shows a handful of headline metrics from a model run without dumping all of them. */
@@ -46,7 +45,7 @@ function MetricPills({ metrics }: { metrics: Record<string, number> | null }) {
   const shown = wanted.filter(([key]) => metrics[key] !== undefined);
   if (!shown.length) return null;
   return (
-    <div className="inline" style={{ marginTop: "0.4rem" }}>
+    <div className="inline" style={{ marginTop: "0.4rem", flexWrap: "wrap", gap: "0.35rem" }}>
       {shown.map(([key, label, digits]) => (
         <span className="pill" key={key} title={key}>
           {label} {Number(metrics[key]).toFixed(digits)}
@@ -59,11 +58,17 @@ function MetricPills({ metrics }: { metrics: Record<string, number> | null }) {
 export default function Predictions() {
   const [tab, setTab] = useState<Tab>("forecast");
   const [error, setError] = useState<string | null>(null);
+  const [runningInference, setRunningInference] = useState(false);
+  const [inferenceNotice, setInferenceNotice] = useState<string | null>(null);
 
-  const { data: models, error: modelsError } = useAsync(() => api.get<ModelsStatus>("/predictions/models/status"), []);
+  const {
+    data: models,
+    error: modelsError,
+    loading: modelsLoading,
+    reload: reloadModels,
+  } = useAsync(() => api.get<ModelsStatus>("/predictions/models/status"), []);
 
-  // On-demand endpoints always return fresh output, so the page is never empty
-  // even before the nightly batch has written any `predictions` documents.
+  // On-demand endpoints always return fresh output
   const forecast = useAsync(
     () => (tab === "forecast" ? api.post<ForecastResponse>("/predictions/expense-forecast", {}) : Promise.resolve(null)),
     [tab],
@@ -92,11 +97,22 @@ export default function Predictions() {
 
   async function runInference() {
     setError(null);
+    setInferenceNotice(null);
+    setRunningInference(true);
     try {
-      await api.post("/predictions/inference/run", {});
+      const res = await api.post<{ predictions_written?: number; users_scored?: number }>(
+        "/predictions/inference/run",
+        {},
+      );
+      setInferenceNotice(
+        `Batch inference complete: scored ${res.users_scored ?? 1} user(s), generated ${res.predictions_written ?? 0} predictions.`,
+      );
       active.reload();
+      reloadModels();
     } catch (err) {
       setError(errorText(err));
+    } finally {
+      setRunningInference(false);
     }
   }
 
@@ -106,22 +122,31 @@ export default function Predictions() {
         <div>
           <h1>Predictions</h1>
           <p className="sub">
-            {models?.available
-              ? `4 pooled models · artifacts in ${models.artifact_dir}`
-              : "Models unavailable — run ml-train"}
+            {modelsLoading
+              ? "Checking model status…"
+              : models?.available
+              ? `${models.models.length} active models · artifacts in ${models.artifact_dir}`
+              : modelsError
+              ? "Unable to reach prediction models service"
+              : models?.message || "Models unavailable — run ml-train"}
           </p>
         </div>
-        <button className="btn" onClick={runInference}>
-          Re-run batch inference
+        <button className="btn" onClick={runInference} disabled={runningInference}>
+          {runningInference ? "Running inference…" : "Re-run batch inference"}
         </button>
       </div>
 
+      {inferenceNotice && <Banner kind="info">{inferenceNotice}</Banner>}
       {error && <Banner kind="error">{error}</Banner>}
       {modelsError && <Banner kind="error">{errorText(modelsError)}</Banner>}
 
       <Card title="Trained models" style={{ marginBottom: "1rem" }}>
-        {!models ? (
+        {modelsLoading ? (
           <Empty>Loading model status…</Empty>
+        ) : modelsError ? (
+          <Empty>Unable to load model registry: {errorText(modelsError)}</Empty>
+        ) : !models || models.models.length === 0 ? (
+          <Empty>{models?.message || "No trained models found."}</Empty>
         ) : (
           <div className="grid grid-2">
             {models.models.map((model) => (
@@ -155,9 +180,18 @@ export default function Predictions() {
 
       {awaitingData && (
         <div className="empty">
-          <strong>Nothing to model yet.</strong> Predictions need a few weeks of transactions to learn
-          from — add some on the <Link to="/transactions">Transactions</Link> page and reload, or sign in
-          as the demo account to see this page populated.
+          {active.error instanceof ApiError && active.error.status === 503 ? (
+            <>
+              <strong>Models are currently unavailable.</strong> ML model artifacts have not been trained yet.
+              Click &ldquo;Re-run batch inference&rdquo; or run model training to generate predictions.
+            </>
+          ) : (
+            <>
+              <strong>Nothing to model yet.</strong> Predictions need a few weeks of transactions to learn
+              from — add some on the <Link to="/transactions">Transactions</Link> page and reload, or sign in
+              as the demo account to see this page populated.
+            </>
+          )}
         </div>
       )}
 
@@ -178,15 +212,27 @@ function ForecastView({ data, onReload }: { data: ForecastResponse | null; onRel
   const items = data.items ?? [];
   if (!items.length) return <Empty>The model needs more history to forecast.</Empty>;
   const peak = Math.max(...items.map((i) => i.predicted_amount), 1);
+  const periodLabel = data.target_period_key || (data.as_of ? relativeTime(data.as_of) : "Current period");
   return (
     <Card
-      title={`Predicted spending · ${data.model_version} · as of ${relativeTime(data.as_of)}`}
+      title={`Predicted spending · ${data.model_version} · ${periodLabel}`}
       action={
         <button className="btn btn-sm" onClick={onReload}>
           Refresh
         </button>
       }
     >
+      {data.total_predicted > 0 && (
+        <div style={{ marginBottom: "1rem" }}>
+          <span className="muted">Total Predicted: </span>
+          <strong style={{ fontSize: "1.2rem" }}>{money(data.total_predicted)}</strong>
+          {data.total_lower_bound !== null && data.total_upper_bound !== null && (
+            <span className="muted" style={{ marginLeft: "0.5rem" }}>
+              ({money(data.total_lower_bound)} – {money(data.total_upper_bound)})
+            </span>
+          )}
+        </div>
+      )}
       <table>
         <thead>
           <tr>
@@ -231,10 +277,11 @@ function OverspendView({ data }: { data: OverspendResponse | null }) {
   if (!data) return <Empty>No risk assessment available.</Empty>;
   const items = data.items ?? [];
   if (!items.length) return <Empty>No budgets to assess against.</Empty>;
+  const prob = (data.global_probability ?? 0) * 100;
   return (
     <Card title={`Overspend risk · ${data.model_version}`}>
-      <Banner kind={data.global_probability >= 0.5 ? "error" : "info"}>
-        Overall probability of overspending this period: <strong>{pct(data.global_probability * 100)}</strong>
+      <Banner kind={prob >= 50 ? "error" : "info"}>
+        Overall probability of overspending this period: <strong>{pct(prob)}</strong>
       </Banner>
       <table>
         <thead>
@@ -285,17 +332,27 @@ function BudgetSuggestions({ data }: { data: BudgetRecommendationsResponse | nul
         <tbody>
           {items.map((item, i) => {
             const current = item.current_limit ?? null;
-            const delta = current !== null ? item.suggested_limit - current : null;
+            const suggested = item.recommended_limit ?? item.suggested_limit ?? 0;
+            const delta = current !== null ? suggested - current : null;
+            const basisText =
+              typeof item.basis === "string"
+                ? item.basis
+                : item.basis && typeof item.basis === "object"
+                ? Object.entries(item.basis)
+                    .map(([k, v]) => `${k}: ${typeof v === "number" ? v.toFixed(2) : String(v)}`)
+                    .join(", ")
+                : item.rationale ?? "—";
+
             return (
               <tr key={`${item.category_id ?? "all"}-${i}`}>
                 <td>{item.category_name ?? "Overall"}</td>
                 <td className="num muted">{current !== null ? money(current) : "—"}</td>
-                <td className="num"><strong>{money(item.suggested_limit)}</strong></td>
+                <td className="num"><strong>{money(suggested)}</strong></td>
                 <td className={`num ${delta === null ? "muted" : delta > 0 ? "neg" : "pos"}`}>
                   {delta === null ? "—" : `${delta > 0 ? "+" : ""}${money(delta)}`}
                 </td>
                 <td className="muted" style={{ fontSize: "0.82rem" }}>
-                  {item.basis ?? item.rationale ?? "—"}
+                  {basisText}
                 </td>
               </tr>
             );
@@ -310,9 +367,25 @@ function SavingsView({ data }: { data: SavingsResponse | null }) {
   if (!data) return <Empty>No savings recommendation available.</Empty>;
   return (
     <Card title="Savings recommendation">
-      <div className="stat-value pos">{money(data.recommended_savings)}</div>
-      <p className="muted" style={{ marginTop: "0.25rem" }}>
-        {data.rationale ?? "Recommended monthly savings based on your spending pattern."}
+      <div className="grid grid-2" style={{ marginBottom: "1rem" }}>
+        <div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>Recommended Monthly Savings</div>
+          <div className="stat-value pos" style={{ fontSize: "1.8rem" }}>{money(data.recommended_savings)}</div>
+          <div className="muted mono" style={{ fontSize: "0.78rem", marginTop: "0.2rem" }}>
+            Target Savings Rate: {pct(data.savings_rate_pct)}
+          </div>
+        </div>
+        <div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>Financial Overview</div>
+          <div style={{ fontSize: "0.9rem", marginTop: "0.25rem", lineHeight: "1.6" }}>
+            <div>Avg. Income: <strong>{money(data.average_income)}</strong></div>
+            <div>Predicted Expenses: <strong>{money(data.predicted_expenses)}</strong></div>
+            <div>Discretionary Spend: <strong>{money(data.discretionary_spend)}</strong></div>
+          </div>
+        </div>
+      </div>
+      <p className="muted" style={{ marginTop: "0.5rem" }}>
+        {data.rationale ?? "Recommended monthly savings calculated from your income and forecast expenses."}
       </p>
       {data.items && data.items.length > 0 && (
         <table style={{ marginTop: "0.75rem" }}>

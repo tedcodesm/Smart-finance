@@ -1,0 +1,110 @@
+{
+  "model_name": "expense_forecaster",
+  "model_version": "expense_forecaster_v1",
+  "trained_at": "2026-09-26T08:32:26.398428+00:00",
+  "n_samples": 5244,
+  "n_train": 4195,
+  "n_test": 1049,
+  "n_features": 21,
+  "feature_names": [
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "rolling_mean_3",
+    "rolling_std_3",
+    "rolling_max_3",
+    "expense_trend_slope",
+    "expense_trend_pct",
+    "rel_to_user_period_expense",
+    "period_income",
+    "period_income_trend_pct",
+    "txn_count",
+    "avg_txn_amount",
+    "expense_share_of_period",
+    "month_sin",
+    "month_cos",
+    "is_month_start",
+    "is_month_end",
+    "user_tenure_periods",
+    "user_periods_with_data",
+    "category_name"
+  ],
+  "metrics": {
+    "mae": 75.9931,
+    "mse": 17172.7731,
+    "rmse": 131.0449,
+    "r2": 0.9162,
+    "mape": 77.15,
+    "bias": 1.8773,
+    "median_abs_error": 36.0532,
+    "naive_lag1_mae": 139.6082,
+    "mae_skill_vs_naive": 0.4557,
+    "q80_abs_error": 121.1288,
+    "top_features": [
+      {
+        "feature": "avg_txn_amount",
+        "importance": 0.33936
+      },
+      {
+        "feature": "expense_share_of_period",
+        "importance": 0.18701
+      },
+      {
+        "feature": "rel_to_user_period_expense",
+        "importance": 0.16923
+      },
+      {
+        "feature": "category_name_Housing",
+        "importance": 0.09839
+      },
+      {
+        "feature": "rolling_mean_3",
+        "importance": 0.0573
+      },
+      {
+        "feature": "rolling_max_3",
+        "importance": 0.04272
+      },
+      {
+        "feature": "lag_2",
+        "importance": 0.01895
+      },
+      {
+        "feature": "period_income",
+        "importance": 0.01606
+      },
+      {
+        "feature": "lag_1",
+        "importance": 0.01404
+      },
+      {
+        "feature": "rolling_std_3",
+        "importance": 0.01358
+      },
+      {
+        "feature": "expense_trend_pct",
+        "importance": 0.00848
+      },
+      {
+        "feature": "period_income_trend_pct",
+        "importance": 0.00835
+      }
+    ]
+  },
+  "params": {
+    "estimator": "random_forest",
+    "n_jobs": -1
+  },
+  "target_stats": {
+    "mean": 321.3707684973303,
+    "std": 461.2466554915045,
+    "min": 1.03,
+    "max": 2433.68,
+    "positive_rate": 1.0
+  },
+  "notes": [
+    "Chronological 80/20 split (train on earlier periods, test on later).",
+    "Compared against a lag_1 naive baseline; the model must beat it to ship."
+  ],
+  "n_users": 60
+}

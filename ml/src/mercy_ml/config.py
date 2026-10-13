@@ -62,7 +62,12 @@ class MLSettings(BaseSettings):
     @property
     def artifact_path(self) -> Path:
         raw = Path(self.artifact_dir)
-        return raw if raw.is_absolute() else (ML_DIR / raw).resolve()
+        resolved = raw if raw.is_absolute() else (ML_DIR / raw).resolve()
+        if not any(resolved.glob("*.joblib")):
+            backend_artifacts = REPO_ROOT / "backend" / "artifacts"
+            if any(backend_artifacts.glob("*.joblib")):
+                return backend_artifacts
+        return resolved
 
     def artifact(self, name: str) -> Path:
         return self.artifact_path / name

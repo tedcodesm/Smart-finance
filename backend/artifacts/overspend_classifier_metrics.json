@@ -1,0 +1,148 @@
+{
+  "model_name": "overspend_classifier",
+  "model_version": "overspend_classifier_v1",
+  "trained_at": "2026-09-26T08:32:31.395152+00:00",
+  "n_samples": 4796,
+  "n_train": 3836,
+  "n_test": 960,
+  "n_features": 23,
+  "feature_names": [
+    "limit_amount",
+    "spent_so_far",
+    "period_elapsed_pct",
+    "days_remaining",
+    "spend_velocity",
+    "projected_total",
+    "utilisation_pct",
+    "txn_count_so_far",
+    "avg_txn_amount",
+    "scope_avg_period_expense",
+    "scope_expense_trend_pct",
+    "user_avg_period_income",
+    "user_avg_period_expense",
+    "user_expense_income_ratio",
+    "user_overspend_rate",
+    "user_overspend_count",
+    "user_periods_observed",
+    "user_tenure_periods",
+    "month_sin",
+    "month_cos",
+    "is_month_start",
+    "is_month_end",
+    "category_name"
+  ],
+  "metrics": {
+    "accuracy": 0.8719,
+    "precision": 0.8699,
+    "recall": 0.8257,
+    "f1": 0.8472,
+    "positive_rate_test": 0.4302,
+    "positive_rate_train": 0.4304,
+    "predicted_positive_rate": 0.4083,
+    "confusion_matrix": [
+      [
+        496,
+        51
+      ],
+      [
+        72,
+        341
+      ]
+    ],
+    "roc_auc": 0.9477,
+    "average_precision": 0.9436,
+    "classification_report": {
+      "0": {
+        "precision": 0.8732394366197183,
+        "recall": 0.906764168190128,
+        "f1-score": 0.8896860986547085,
+        "support": 547.0
+      },
+      "1": {
+        "precision": 0.8698979591836735,
+        "recall": 0.8256658595641646,
+        "f1-score": 0.8472049689440994,
+        "support": 413.0
+      },
+      "accuracy": 0.871875,
+      "macro avg": {
+        "precision": 0.8715686979016959,
+        "recall": 0.8662150138771463,
+        "f1-score": 0.8684455337994039,
+        "support": 960.0
+      },
+      "weighted avg": {
+        "precision": 0.8718019051810866,
+        "recall": 0.871875,
+        "f1-score": 0.8714103626437901,
+        "support": 960.0
+      }
+    },
+    "top_features": [
+      {
+        "feature": "utilisation_pct",
+        "importance": 0.26764
+      },
+      {
+        "feature": "user_expense_income_ratio",
+        "importance": 0.07043
+      },
+      {
+        "feature": "projected_total",
+        "importance": 0.06998
+      },
+      {
+        "feature": "spend_velocity",
+        "importance": 0.06786
+      },
+      {
+        "feature": "spent_so_far",
+        "importance": 0.06332
+      },
+      {
+        "feature": "user_avg_period_expense",
+        "importance": 0.06246
+      },
+      {
+        "feature": "limit_amount",
+        "importance": 0.05035
+      },
+      {
+        "feature": "avg_txn_amount",
+        "importance": 0.04592
+      },
+      {
+        "feature": "scope_avg_period_expense",
+        "importance": 0.04156
+      },
+      {
+        "feature": "user_avg_period_income",
+        "importance": 0.03549
+      },
+      {
+        "feature": "scope_expense_trend_pct",
+        "importance": 0.03381
+      },
+      {
+        "feature": "period_elapsed_pct",
+        "importance": 0.03322
+      }
+    ]
+  },
+  "params": {
+    "estimator": "random_forest",
+    "n_jobs": -1
+  },
+  "target_stats": {
+    "mean": 0.4303586321934946,
+    "std": 0.4951779539517052,
+    "min": 0.0,
+    "max": 1.0,
+    "positive_rate": 0.4303586321934946
+  },
+  "notes": [
+    "Pooled model: trained on all users at once, scored with per-user rate features.",
+    "80/20 stratified hold-out; class_weight='balanced' to absorb class imbalance."
+  ],
+  "n_users": 46
+}

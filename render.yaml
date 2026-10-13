@@ -7,7 +7,7 @@ services:
     plan: free
     env: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && (pip install -e ../ml || true)
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: MONGO_URI
@@ -20,6 +20,8 @@ services:
         generateValue: true # Render will automatically generate a secure secret
       - key: CORS_ORIGINS
         sync: false # After the frontend deploys, update this with the frontend's URL
+      - key: ML_ARTIFACT_DIR
+        value: "artifacts"
 
   # ---------------------------------------------------------
   # 2. Frontend Static Site (React + Vite)

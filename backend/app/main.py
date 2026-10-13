@@ -5,8 +5,16 @@ Run with:  uvicorn app.main:app --reload
 
 from __future__ import annotations
 
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
+
+# Ensure mercy_ml package in ml/src is importable regardless of deployment CWD
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_ML_SRC = _REPO_ROOT / "ml" / "src"
+if _ML_SRC.exists() and str(_ML_SRC) not in sys.path:
+    sys.path.insert(0, str(_ML_SRC))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,6 +81,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|.*\.onrender\.com)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

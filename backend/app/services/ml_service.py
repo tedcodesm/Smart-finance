@@ -76,10 +76,17 @@ class MLService:
     # ------------------------------------------------------------------ batch
     def run_inference(self, user_ids: Iterable[Any] | None = None, as_of: Any = None) -> dict[str, Any]:
         """Score users and refresh `predictions`. Returns the run summary."""
-        self._ensure_runtime()
-        from mercy_ml.infer import run_inference
+        try:
+            self._ensure_runtime()
+            from mercy_ml.infer import run_inference
 
-        return run_inference(user_ids=list(user_ids) if user_ids else None, as_of=as_of)
+            return run_inference(user_ids=list(user_ids) if user_ids else None, as_of=as_of)
+        except RuntimeError as exc:
+            if "No artifacts found" in str(exc) or "mercy-ml-train" in str(exc):
+                raise ServiceUnavailableError("No trained ML model artifacts found. Please run training first.") from exc
+            raise
+        except ImportError as exc:
+            raise ServiceUnavailableError("ML runtime is unavailable.") from exc
 
     def run_batch_inference(self) -> dict[str, Any]:
         """Nightly job: score every active user."""
@@ -89,11 +96,23 @@ class MLService:
 
     # ------------------------------------------------------------ model status
     def models_status(self) -> ModelRegistryResponse:
-        self._ensure_runtime()
-        from mercy_ml.config import get_settings
-        from mercy_ml.registry import available_models
+        try:
+            self._ensure_runtime()
+            from mercy_ml.config import get_settings
+            from mercy_ml.registry import available_models
 
-        available = available_models()
+            available = available_models()
+            artifact_dir = str(get_settings().artifact_path)
+        except Exception as exc:
+            logger.warning("Failed to inspect ML models: %s", exc)
+            return ModelRegistryResponse(
+                available=False,
+                artifact_dir="unavailable",
+                models=[],
+                latest_run=None,
+                message="Models unavailable — run ml-train",
+            )
+
         latest_run = (
             self.db[_MODEL_RUNS_COLLECTION].find_one({"run_type": "inference"}, sort=[("created_at", -1)])
             or {}
@@ -127,7 +146,7 @@ class MLService:
         message = None if models else "No trained artifacts found - run `mercy-ml-train` first."
         return ModelRegistryResponse(
             available=bool(models),
-            artifact_dir=str(get_settings().artifact_path),
+            artifact_dir=artifact_dir,
             models=models,
             latest_run=_model_run_info(latest_run) if latest_run else None,
             message=message,

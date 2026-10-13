@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, Query, status as http_status
 
 from app.api.deps import Services, get_current_user, get_services
 from app.core.constants import PredictionType
-from app.core.errors import ValidationError
+from app.core.errors import ServiceUnavailableError, ValidationError
 from app.core.pagination import Page, PageParams
 from app.core.time_utils import strip_tz, utc_now
 from app.models.base import serialize_doc
@@ -80,7 +80,10 @@ def _ensure_fresh(services: Services, user_id: Any, *, max_age_hours: int = 12) 
         )
         if newest is not None and strip_tz(utc_now()) - strip_tz(newest) < timedelta(hours=max_age_hours):
             return
-    services.ml_service().run_inference(user_ids=[user_id])
+    try:
+        services.ml_service().run_inference(user_ids=[user_id])
+    except ServiceUnavailableError:
+        pass
 
 
 def _parse_types(types: str | None, single_type: str | None = None) -> list[str] | None:

@@ -7,8 +7,6 @@ __pycache__/
 node_modules/
 dist/
 build/
-ml/artifacts/*
-!ml/artifacts/.gitkeep
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

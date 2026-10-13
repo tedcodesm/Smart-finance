@@ -237,8 +237,14 @@ export interface ModelsStatus {
 
 export interface ForecastResponse {
   run_id: string;
-  as_of: string;
+  /** ISO datetime string or period key; backend sends `target_period_key` */
+  target_period_key: string;
+  as_of?: string; // not present in backend – kept for backwards compat
   model_version: string;
+  period: string;
+  total_predicted: number;
+  total_lower_bound?: number | null;
+  total_upper_bound?: number | null;
   items: {
     category_id: string | null;
     category_name: string | null;
@@ -246,10 +252,10 @@ export interface ForecastResponse {
     predicted_amount: number;
     lower_bound: number | null;
     upper_bound: number | null;
-    confidence: number | null;
-    band: string | null;
+    confidence_score: number;
+    trend: string | null;
+    band?: string | null;
   }[];
-  total_predicted?: number;
 }
 
 export interface OverspendResponse {
@@ -269,23 +275,33 @@ export interface OverspendResponse {
 
 export interface BudgetRecommendationsResponse {
   run_id?: string;
-  as_of?: string;
+  model_version?: string;
+  period?: string;
   items: {
     category_id: string | null;
     category_name: string | null;
-    suggested_limit: number;
-    basis?: string;
+    /** Backend field name is recommended_limit */
+    recommended_limit: number;
+    /** Alias kept so old renders still work */
+    suggested_limit?: number;
+    basis?: Record<string, unknown> | string;
     rationale?: string;
     current_limit?: number | null;
-    projected_total?: number | null;
+    confidence_score?: number;
   }[];
 }
 
 export interface SavingsResponse {
   run_id?: string;
-  as_of?: string;
-  recommended_savings: number;
   model_version?: string;
+  period?: string;
+  average_income: number;
+  predicted_expenses: number;
+  discretionary_spend: number;
+  recommended_savings: number;
+  savings_rate_pct: number;
+  confidence_score?: number;
+  basis?: Record<string, unknown>;
   rationale?: string;
   items?: { category_id: string | null; category_name: string | null; recommended: number }[];
 }

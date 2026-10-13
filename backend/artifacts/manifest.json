@@ -1,0 +1,213 @@
+{
+  "written_at": "2026-09-26T08:32:36.083435+00:00",
+  "feature_contracts": [
+    {
+      "name": "overspend_classifier",
+      "numeric_features": [
+        "limit_amount",
+        "spent_so_far",
+        "period_elapsed_pct",
+        "days_remaining",
+        "spend_velocity",
+        "projected_total",
+        "utilisation_pct",
+        "txn_count_so_far",
+        "avg_txn_amount",
+        "scope_avg_period_expense",
+        "scope_expense_trend_pct",
+        "user_avg_period_income",
+        "user_avg_period_expense",
+        "user_expense_income_ratio",
+        "user_overspend_rate",
+        "user_overspend_count",
+        "user_periods_observed",
+        "user_tenure_periods",
+        "month_sin",
+        "month_cos",
+        "is_month_start",
+        "is_month_end"
+      ],
+      "categorical_features": [
+        "category_name"
+      ],
+      "target": "label_overspend",
+      "unit": "label"
+    },
+    {
+      "name": "expense_forecaster",
+      "numeric_features": [
+        "lag_1",
+        "lag_2",
+        "lag_3",
+        "rolling_mean_3",
+        "rolling_std_3",
+        "rolling_max_3",
+        "expense_trend_slope",
+        "expense_trend_pct",
+        "rel_to_user_period_expense",
+        "period_income",
+        "period_income_trend_pct",
+        "txn_count",
+        "avg_txn_amount",
+        "expense_share_of_period",
+        "month_sin",
+        "month_cos",
+        "is_month_start",
+        "is_month_end",
+        "user_tenure_periods",
+        "user_periods_with_data"
+      ],
+      "categorical_features": [
+        "category_name"
+      ],
+      "target": "target_next_expense",
+      "unit": "money"
+    },
+    {
+      "name": "savings_recommender",
+      "numeric_features": [
+        "period_income",
+        "period_expense",
+        "period_net_savings",
+        "avg_income_3",
+        "avg_expense_3",
+        "income_trend_pct",
+        "expense_trend_pct",
+        "income_volatility",
+        "expense_volatility",
+        "savings_rate",
+        "txn_count",
+        "distinct_categories",
+        "recurring_share",
+        "user_tenure_periods",
+        "month_sin",
+        "month_cos"
+      ],
+      "categorical_features": [],
+      "target": "target_next_net_savings",
+      "unit": "money"
+    },
+    {
+      "name": "spending_clusters",
+      "numeric_features": [
+        "log_amount",
+        "amount_zscore_in_category",
+        "amount_ratio_in_category",
+        "day_of_week",
+        "is_weekend",
+        "day_of_month",
+        "is_month_start",
+        "is_month_end",
+        "week_of_year_sin",
+        "week_of_year_cos",
+        "month_sin",
+        "month_cos",
+        "txn_hour_bucket",
+        "user_period_expense",
+        "category_period_expense",
+        "category_share_of_period",
+        "is_recurring"
+      ],
+      "categorical_features": [
+        "category_name"
+      ],
+      "target": null,
+      "unit": "transaction"
+    }
+  ],
+  "generated_at": "2026-09-26T08:32:36.037401+00:00",
+  "era": "all_history",
+  "data": {
+    "transactions": 18183,
+    "categories": 18,
+    "budgets": 109,
+    "users": 60
+  },
+  "frames": {
+    "spending_clusters": 16597,
+    "expense_forecaster": 5244,
+    "overspend_classifier": 4796,
+    "savings_recommender": 499
+  },
+  "model_selection": {
+    "expense_forecaster": "random_forest",
+    "overspend_classifier": "random_forest",
+    "savings_recommender": "gradient_boosting",
+    "budget_recommender": "closed_form"
+  },
+  "models": [
+    {
+      "name": "spending_clusters",
+      "version": "spending_clusters",
+      "trained": true,
+      "n_samples": 16597,
+      "n_users": 60,
+      "metrics": {
+        "silhouette_score": 0.2606,
+        "n_clusters": 2,
+        "inertia": 443433.7829,
+        "calinski_harabasz": 2038.7099,
+        "davies_bouldin": 1.7544
+      }
+    },
+    {
+      "name": "expense_forecaster",
+      "version": "expense_forecaster",
+      "trained": true,
+      "n_samples": 5244,
+      "n_users": 60,
+      "metrics": {
+        "mae": 75.9931,
+        "mse": 17172.7731,
+        "rmse": 131.0449,
+        "r2": 0.9162,
+        "mape": 77.15,
+        "bias": 1.8773,
+        "median_abs_error": 36.0532,
+        "naive_lag1_mae": 139.6082,
+        "mae_skill_vs_naive": 0.4557,
+        "q80_abs_error": 121.1288
+      }
+    },
+    {
+      "name": "overspend_classifier",
+      "version": "overspend_classifier",
+      "trained": true,
+      "n_samples": 4796,
+      "n_users": 46,
+      "metrics": {
+        "accuracy": 0.8719,
+        "precision": 0.8699,
+        "recall": 0.8257,
+        "f1": 0.8472,
+        "positive_rate_test": 0.4302,
+        "positive_rate_train": 0.4304,
+        "predicted_positive_rate": 0.4083,
+        "roc_auc": 0.9477,
+        "average_precision": 0.9436
+      }
+    },
+    {
+      "name": "savings_recommender",
+      "version": "savings_recommender",
+      "trained": true,
+      "n_samples": 499,
+      "n_users": 59,
+      "metrics": {
+        "mae": 874.3017,
+        "mse": 1457896.1757,
+        "rmse": 1207.4337,
+        "r2": 0.2668,
+        "median_abs_error": 619.5547,
+        "mape": 121.66,
+        "mean_true_savings": 2549.3494,
+        "mean_predicted_savings": 2398.979,
+        "bias": -150.3704,
+        "overestimate_rate": 0.48,
+        "naive_last_period_mae": 1136.515,
+        "mae_skill_vs_naive": 0.2307
+      }
+    }
+  ],
+  "duration_seconds": 96.7
+}
