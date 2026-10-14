@@ -155,6 +155,50 @@ class DashboardService:
             insights=insights,
         )
 
+    def build_fallback(self, user: dict[str, Any], *, period: str = "monthly") -> DashboardResponse:
+        as_of = strip_tz(utc_now())
+        start, end, period_key = resolve_range(period, as_of)
+        user_curr = user.get("base_currency")
+        currency = settings.default_currency if not user_curr or user_curr.upper() == "USD" else user_curr
+
+        try:
+            totals = self.transactions.totals(user.get("_id"), start=start, end=end)
+            income = round_money(totals.get("income", 0.0))
+            expense = round_money(totals.get("expense", 0.0))
+        except Exception:
+            income, expense = 0.0, 0.0
+        net = round_money(income - expense)
+
+        cards = {
+            "income": MoneyCard(label="Income this month", value=income, currency=currency),
+            "expense": MoneyCard(label="Spending this month", value=expense, currency=currency),
+            "net": MoneyCard(label="Net this month", value=net, currency=currency),
+            "savings_rate": MoneyCard(label="Savings rate", value=0.0, currency=currency),
+        }
+
+        try:
+            recent_raw = self.transactions.list_for_user(user.get("_id"), sort=[("date", -1)], skip=0, limit=RECENT_TRANSACTION_LIMIT)
+            recent = [serialize_doc(row) for row in recent_raw if row]
+        except Exception:
+            recent = []
+
+        return DashboardResponse(
+            generated_at=utc_now(),
+            currency=currency,
+            period="monthly",
+            period_key=period_key,
+            cards=cards,
+            cash_flow=[],
+            net_worth=[],
+            top_categories=[],
+            budgets=[],
+            recent_transactions=recent,
+            predictions=[],
+            alerts=[],
+            goals_summary={},
+            insights=["Welcome to your dashboard."],
+        )
+
     # ------------------------------------------------------------- sections
     def _cash_flow(self, user_id: Any) -> list[TimeBucket]:
         rows = self.transactions.monthly_rollup(user_id, months=CASH_FLOW_MONTHS)
@@ -243,16 +287,22 @@ def _to_widget(doc: dict[str, Any]) -> PredictionWidget | None:
     elif prediction_type is PredictionType.BUDGET_RECOMMENDATION:
         headline = f"Suggested budget: {category_name or 'Overall'}"
         delta = (doc.get("extra") or {}).get("delta")
-        detail = f"{delta:+.2f} vs. current limit." if delta is not None else None
-        action = {"kind": "create_budget", "category_id": scope.get("category_id")}
+        try:
+            detail = f"{float(delta):+.2f} vs. current limit." if delta is not None else None
+        except (ValueError, TypeError):
+            detail = None
+        action = {"kind": "create_budget", "category_id": str(scope["category_id"]) if scope.get("category_id") else None}
     elif prediction_type is PredictionType.SAVINGS_RECOMMENDATION:
         headline = "Projected net savings"
         contribution = (doc.get("extra") or {}).get("suggested_contribution_total")
-        detail = f"Suggested contribution: {contribution:.2f}." if contribution is not None else None
+        try:
+            detail = f"Suggested contribution: {float(contribution):.2f}." if contribution is not None else None
+        except (ValueError, TypeError):
+            detail = None
         action = {"kind": "open_goals"}
     else:
         headline = "Top spending habit"
-        detail = doc.get("label")
+        detail = str(doc.get("label") or "") if doc.get("label") else None
     return PredictionWidget(
         type=prediction_type,
         headline=headline,
