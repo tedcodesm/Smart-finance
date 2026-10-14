@@ -120,7 +120,17 @@ export default function DashboardPage() {
   const { data, error, loading, reload } = useAsync(() => api.get<Dashboard>("/dashboard"), []);
 
   if (loading) return <Loader label="Loading dashboard…" />;
-  if (error) return <Banner kind="error">{errorText(error)}</Banner>;
+  if (error)
+    return (
+      <div style={{ maxWidth: 640, margin: "2rem auto", padding: "0 1rem" }}>
+        <Banner kind="error">{errorText(error)}</Banner>
+        <div style={{ marginTop: "1rem" }}>
+          <button className="btn btn-primary" onClick={() => reload()}>
+            Retry connection
+          </button>
+        </div>
+      </div>
+    );
   if (!data) return <Empty>No data.</Empty>;
 
   const { cards, currency } = data;

@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api, getAccessToken, setTokens, setUnauthorizedHandler } from "../api/client";
+import { api, ApiError, getAccessToken, setTokens, setUnauthorizedHandler } from "../api/client";
 import type { AuthResponse, User } from "../api/types";
 
 interface AuthState {
@@ -37,7 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((me) => {
         if (!cancelled) setUser(me);
       })
-      .catch(() => setTokens(null, null))
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 401) {
+          setTokens(null, null);
+        }
+      })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });

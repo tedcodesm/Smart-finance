@@ -8,11 +8,18 @@
  *    replayed once. Concurrent 401s share that single refresh.
  */
 
-// In production there is no Vite dev-server proxy, so we need to prefix every
-// request with the backend origin. VITE_BACKEND_ORIGIN is set in the Render
-// environment; it is empty (undefined) in local dev where the proxy handles it.
-const ORIGIN = (import.meta.env.VITE_BACKEND_ORIGIN ?? "").replace(/\/$/, "");
-const BASE = `${ORIGIN}/api/v1`;
+export function getBackendOrigin(): string {
+  const stored = typeof localStorage !== "undefined" ? localStorage.getItem("mercy.backend_origin") : null;
+  let origin = (stored || import.meta.env.VITE_BACKEND_ORIGIN || "").trim().replace(/\/$/, "");
+  if (origin && !origin.startsWith("http://") && !origin.startsWith("https://")) {
+    origin = `https://${origin}`;
+  }
+  if (typeof window !== "undefined" && window.location.protocol === "https:" && origin.startsWith("http://")) {
+    origin = origin.replace(/^http:\/\//, "https://");
+  }
+  return origin;
+}
+
 const ACCESS_KEY = "mercy.access_token";
 const REFRESH_KEY = "mercy.refresh_token";
 
@@ -52,7 +59,8 @@ export function setUnauthorizedHandler(fn: () => void): void {
 type Query = Record<string, string | number | boolean | undefined | null>;
 
 function buildUrl(path: string, query?: Query): string {
-  const url = `${BASE}${path}`;
+  const origin = getBackendOrigin();
+  const url = `${origin}/api/v1${path}`;
   if (!query) return url;
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
@@ -123,11 +131,34 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-  const response = await fetch(buildUrl(path, query), {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  const origin = getBackendOrigin();
+  const url = buildUrl(path, query);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (err: unknown) {
+    if (err instanceof ApiError) throw err;
+    if (!origin && !import.meta.env.DEV) {
+      throw new ApiError(
+        0,
+        "missing_origin",
+        "Backend URL is not configured. Please set the VITE_BACKEND_ORIGIN environment variable in your deployment settings (or run localStorage.setItem('mercy.backend_origin', 'https://<your-backend>.onrender.com') in the browser console).",
+        err,
+      );
+    }
+    const target = origin || (typeof window !== "undefined" ? window.location.origin : "server");
+    throw new ApiError(
+      0,
+      "network_error",
+      `Unable to connect to backend at ${target}. The server may be waking up (Render free tier takes ~50s) or offline. Please retry in a few moments.`,
+      err,
+    );
+  }
 
   if (response.status === 401 && retry && refreshToken) {
     if (await refreshAccessToken()) {
@@ -141,7 +172,16 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   if (raw) return (await response.blob()) as T;
   if (response.status === 204) return undefined as T;
   const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+  try {
+    return (text ? JSON.parse(text) : undefined) as T;
+  } catch (parseErr) {
+    throw new ApiError(
+      response.status,
+      "invalid_json",
+      "Invalid JSON response from server. Check that the backend URL points to the API and not a static HTML page.",
+      text.slice(0, 200),
+    );
+  }
 }
 
 export const api = {
