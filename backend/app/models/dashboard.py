@@ -26,7 +26,7 @@ class MoneyCard(BaseModel):
     previous_value: float | None = None
     change_pct: float | None = None
     trend: str | None = None
-    currency: str = "USD"
+    currency: str = "KES"
 
 
 class NetWorthPoint(BaseModel):
@@ -74,7 +74,7 @@ class DashboardResponse(BaseModel):
     )
 
     generated_at: datetime
-    currency: str = "USD"
+    currency: str = "KES"
     period: str = "monthly"
     period_key: str
 

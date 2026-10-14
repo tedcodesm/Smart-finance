@@ -70,7 +70,8 @@ class DashboardService:
         as_of = strip_tz(as_of or utc_now())
         start, end, period_key = resolve_range(period, as_of)
         user = self.users.find_by_id(user_id) or {}
-        currency = user.get("base_currency") or "USD"
+        user_curr = user.get("base_currency")
+        currency = settings.default_currency if not user_curr or user_curr.upper() == "USD" else user_curr
 
         totals = self.transactions.totals(user_id, start=start, end=end)
         income = round_money(totals["income"])

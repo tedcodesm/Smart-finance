@@ -140,7 +140,7 @@ export default function DashboardPage() {
         <div className="topbar-actions">
           <div className="profile-pill">
             <div className="profile-avatar">{(user?.name ?? "U").slice(0, 1).toUpperCase()}</div>
-            <span>{user?.base_currency ?? currency}</span>
+            <span>{(!user?.base_currency || user.base_currency === "USD") && (!currency || currency === "USD") ? "KES" : (user?.base_currency ?? currency)}</span>
           </div>
         </div>
       </header>

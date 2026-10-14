@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name,
           email,
           password,
-          base_currency: "USD",
+          base_currency: "KES",
         }),
       );
     },

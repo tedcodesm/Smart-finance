@@ -2,11 +2,12 @@
 
 import type { ReactNode } from "react";
 
-export function money(value: number | null | undefined, currency = "USD"): string {
+export function money(value: number | null | undefined, currency = "KES"): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  const activeCurrency = !currency || currency === "USD" ? "KES" : currency;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
+    currency: activeCurrency,
     maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2,
   }).format(value);
 }

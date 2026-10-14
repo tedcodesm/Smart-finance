@@ -54,7 +54,7 @@ class UserCreate(BaseModel):
     name: Annotated[str, Field(min_length=1, max_length=120)]
     email: EmailStr
     password: StrongPassword
-    base_currency: str = Field(default="USD", min_length=3, max_length=3)
+    base_currency: str = Field(default="KES", min_length=3, max_length=3)
 
     @field_validator("base_currency")
     @classmethod
@@ -79,12 +79,19 @@ class UserUpdate(BaseModel):
 class UserOut(MongoModel):
     name: str
     email: EmailStr
-    base_currency: str = "USD"
+    base_currency: str = "KES"
     is_active: bool = True
     monthly_income_estimate: float | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
     last_login_at: datetime | None = None
+
+    @field_validator("base_currency", mode="before")
+    @classmethod
+    def _kes(cls, value: str | None) -> str:
+        if not value or value.upper() == "USD":
+            return "KES"
+        return value.upper()
 
 
 class PasswordChange(BaseModel):

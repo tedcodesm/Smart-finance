@@ -50,7 +50,7 @@ def register(client: TestClient, **overrides: Any) -> dict[str, Any]:
         "name": overrides.get("name", "Ada Lovelace"),
         "email": overrides.get("email", "ada@example.com"),
         "password": overrides.get("password", "analytical1"),
-        "base_currency": overrides.get("base_currency", "USD"),
+        "base_currency": overrides.get("base_currency", "KES"),
     }
     response = client.post("/api/v1/auth/register", json=payload)
     assert response.status_code == 201, response.text

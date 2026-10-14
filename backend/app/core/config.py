@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     )
 
     # --- domain defaults ---
-    default_currency: str = "USD"
+    default_currency: str = "KES"
     budget_alert_threshold_pct: float = 0.8
 
     # --- retention ---
