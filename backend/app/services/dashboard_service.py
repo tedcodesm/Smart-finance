@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
+from app.core.config import settings
 from app.core.constants import BudgetPeriod, PredictionType, TransactionType
 from app.core.logging import get_logger
 from app.core.money import round_money, safe_div
